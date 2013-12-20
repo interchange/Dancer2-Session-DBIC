@@ -65,6 +65,7 @@ use Dancer qw(:syntax);
 use DBIx::Class;
 use Try::Tiny;
 use Module::Load;
+use Scalar::Util qw(blessed);
 
 our $VERSION = '0.001';
 
@@ -176,7 +177,12 @@ sub _dbic {
 
     # Prefer an active schema over a schema class.
     if (defined $settings->{schema}) {
-        $handle->{schema} = $settings->{schema}->();
+        if (blessed $settings->{schema}) {
+            $handle->{schema} = $settings->{schema};
+        }
+        else {
+            $handle->{schema} = $settings->{schema}->();
+        }
     }
     elsif (! defined $settings->{schema_class}) {
         die "No schema class defined.";
