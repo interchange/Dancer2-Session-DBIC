@@ -1,60 +1,54 @@
 package Dancer::Session::DBIC;
 
-# ABSTRACT: DBIx::Class based session engine for Dancer
-
 =head1 NAME
 
-Dancer::Session::DBIC - DBIx::Class based session engine for Dancer
+Dancer::Session::DBIC - DBIx::Class session engine for Dancer
 
-=head1 SYNOPSIS
+=head1 VERSION
 
-This module implements a session engine by serializing the session,
+0.001
+
+=head1 DESCRIPTION
+
+This module implements a session engine for Dancer by serializing the session,
 and storing it in a database via L<DBIx::Class>. The default serialization method is L<JSON>,
 though one can specify any serialization format you want. L<YAML> and L<Storable> are
 viable alternatives.
 
 JSON was chosen as the default serialization format, as it is fast, terse, and portable.
 
-=head1 USAGE
+=head1 SYNOPSIS
 
-In config.yml
+Example configuration:
 
-  session: "DBIC"
-  session_options:
+    session: "DBIC"
+    session_options:
       dsn:      "DBI:mysql:database=testing;host=127.0.0.1;port=3306" # DBI Data Source Name
-      schema_class:    "Interchange6::Schema"  # Name of the table to store sessions
+      schema_class:    "Interchange6::Schema"  # DBIx::Class schema
       user:     "user"      # Username used to connect to the database
       pass: "password"  # Password to connect to the database
+      resultset: "MySession" # DBIx::Class resultset, defaults to Session
+      id_column: "my_session_id" # defaults to sessions_id
+      data_column: "my_session_data" # defaults to session_data
 
-Alternatively, you can set the database handle in your application, by passing
-an anonymous sub that returns an active DBH connection. Specifying a custom
-serializer / deserializer is also possible
+In conjunction with L<Dancer::Plugin::DBIC>, you can simply use the schema
+object provided by this plugin in your application:
+
+    set session_options => {schema => schema};
+
+Custom serializer / deserializer can be specified as follows:
 
     set 'session_options' => {
-        dbh          => sub { DBI->connect( 'DBI:mysql:database=testing;host=127.0.0.1;port=3306', 'user', 'password' ); },
+        schema       => schema,
         serializer   => sub { YAML::Dump(@_); },
         deserializer => sub { YAML::Load(@_); },
-        table        => 'sessions',
     };
 
-The following schema is the minimum requirement.
+=head1 SESSION EXPIRATION
 
-    CREATE TABLE `sessions` (
-        `id`           CHAR(40) PRIMARY KEY,
-        `session_data` TEXT
-    );
+A timestamp field that updates when a session is updated is recommended, so you can expire sessions server-side as well as client-side.
 
-If using a C<Memory> table, you must use a C<VARCHAR> type for the C<session_data> field, as that
-table type doesn't support C<TEXT>
-
-A timestamp field that updates when a session is updated is recommended, so you can expire sessions
-server-side as well as client-side. You can do this in MySQL with the following SQL. Other database
-engines are left as an exercise for the reader.
-
-    `last_active` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-
-This session engine will not automagically remove expired sessions on the server, but with a timestamp
-field as above, you should be able to to do this manually.
+This session engine will not automagically remove expired sessions on the server, but with a timestamp field as above, you should be able to to do this manually.
 
 =cut
 
