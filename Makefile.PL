@@ -37,8 +37,8 @@ my %WriteMakefileArgs = (
   },
   META_MERGE        => {
         resources => {
-            repository  => 'https://github.com/interchange/Dancer-Plugin-DBIC.git',
-            bugtracker => 'https://github.com/interchange/Dancer-Plugin-DBIC/issues'
+            repository  => 'https://github.com/interchange/Dancer-Session-DBIC.git',
+            bugtracker => 'https://github.com/interchange/Dancer-Session-DBIC/issues'
         },
    },
 );
