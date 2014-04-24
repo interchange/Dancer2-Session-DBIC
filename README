@@ -1,11 +1,11 @@
 NAME
-    Dancer::Session::DBIC - DBIx::Class session engine for Dancer
+    Dancer2::Session::DBIC - DBIx::Class session engine for Dancer2
 
 VERSION
-    0.002
+    0.004
 
 DESCRIPTION
-    This module implements a session engine for Dancer by serializing the
+    This module implements a session engine for Dancer2 by serializing the
     session, and storing it in a database via DBIx::Class. The default
     serialization method is JSON, though one can specify any serialization
     format you want. YAML and Storable are viable alternatives.
@@ -17,27 +17,16 @@ SYNOPSIS
     Example configuration:
 
         session: "DBIC"
-        session_options:
-          dsn:      "DBI:mysql:database=testing;host=127.0.0.1;port=3306" # DBI Data Source Name
-          schema_class:    "Interchange6::Schema"  # DBIx::Class schema
-          user:     "user"      # Username used to connect to the database
-          pass: "password"  # Password to connect to the database
-          resultset: "MySession" # DBIx::Class resultset, defaults to Session
-          id_column: "my_session_id" # defaults to sessions_id
-          data_column: "my_session_data" # defaults to session_data
-
-    In conjunction with Dancer::Plugin::DBIC, you can simply use the schema
-    object provided by this plugin in your application:
-
-        set session_options => {schema => schema};
-
-    Custom serializer / deserializer can be specified as follows:
-
-        set 'session_options' => {
-            schema       => schema,
-            serializer   => sub { YAML::Dump(@_); },
-            deserializer => sub { YAML::Load(@_); },
-        };
+        engines:
+          session:
+            DBIC:
+              dsn:      "DBI:mysql:database=testing;host=127.0.0.1;port=3306" # DBI Data Source Name
+              schema_class:    "Interchange6::Schema"  # DBIx::Class schema
+              user:     "user"      # Username used to connect to the database
+              password: "password"  # Password to connect to the database
+              resultset: "MySession" # DBIx::Class resultset, defaults to Session
+              id_column: "my_session_id" # defaults to sessions_id
+              data_column: "my_session_data" # defaults to session_data
 
 SESSION EXPIRATION
     A timestamp field that updates when a session is updated is recommended,
@@ -47,31 +36,53 @@ SESSION EXPIRATION
     the server, but with a timestamp field as above, you should be able to
     to do this manually.
 
-METHODS
-  create()
-    Creates a new session. Returns the session object.
+ATTRIBUTES
+  schema_class
+    DBIx::Class schema class, e.g. Interchange6::Schema.
 
-  flush()
+  resultset
+    DBIx::Class resultset, defaults to `Session'.
+
+  id_column
+    Column for session id, defaults to `sessions_id'.
+
+  data_column
+    Column for session data, defaults to `session_data'.
+
+  dsn
+    DBI dsn to connect to the database.
+
+  user
+    Database username.
+
+  password
+    Database password.
+
+  schema
+    DBIx::Class schema.
+
+METHODS
+  _flush
     Write the session to the database. Returns the session object.
 
-  retrieve($id)
+  _retrieve($id)
     Look for a session with the given id.
 
-    Returns the session object if found, `undef' if not. Logs a debug-level
-    warning if the session was found, but could not be deserialized.
+    Returns the session object if found, `undef' if not. Dies if the session
+    was found, but could not be deserialized.
 
-  destroy()
+  _destroy()
     Remove the current session object from the database.
 
 SEE ALSO
-    Dancer, Dancer::Session
+    Dancer2, Dancer2::Session
 
 AUTHOR
     Stefan Hornburg (Racke) <racke@linuxia.de>
 
 ACKNOWLEDGEMENTS
-    Based on code from Dancer::Session::DBI written by James Aitken and code
-    from Dancer::Plugin::DBIC written by Naveed Massjouni.
+    Based on code from Dance::Session::DBI written by James Aitken and code
+    from Dance::Plugin::DBIC written by Naveed Massjouni.
 
 COPYRIGHT AND LICENSE
     This software is copyright (c) Stefan Hornburg.
