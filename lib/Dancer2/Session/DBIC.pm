@@ -1,16 +1,22 @@
-package Dancer::Session::DBIC;
+package Dancer2::Session::DBIC;
+
+use Moo;
+use Dancer2::Core::Types;
+use JSON;
+
+our $VERSION = '0.003';
 
 =head1 NAME
 
-Dancer::Session::DBIC - DBIx::Class session engine for Dancer
+Dancer2::Session::DBIC - DBIx::Class session engine for Dancer2
 
 =head1 VERSION
 
-0.002
+0.003
 
 =head1 DESCRIPTION
 
-This module implements a session engine for Dancer by serializing the session,
+This module implements a session engine for Dancer2 by serializing the session,
 and storing it in a database via L<DBIx::Class>. The default serialization method is L<JSON>,
 though one can specify any serialization format you want. L<YAML> and L<Storable> are
 viable alternatives.
@@ -22,27 +28,16 @@ JSON was chosen as the default serialization format, as it is fast, terse, and p
 Example configuration:
 
     session: "DBIC"
-    session_options:
-      dsn:      "DBI:mysql:database=testing;host=127.0.0.1;port=3306" # DBI Data Source Name
-      schema_class:    "Interchange6::Schema"  # DBIx::Class schema
-      user:     "user"      # Username used to connect to the database
-      pass: "password"  # Password to connect to the database
-      resultset: "MySession" # DBIx::Class resultset, defaults to Session
-      id_column: "my_session_id" # defaults to sessions_id
-      data_column: "my_session_data" # defaults to session_data
-
-In conjunction with L<Dancer::Plugin::DBIC>, you can simply use the schema
-object provided by this plugin in your application:
-
-    set session_options => {schema => schema};
-
-Custom serializer / deserializer can be specified as follows:
-
-    set 'session_options' => {
-        schema       => schema,
-        serializer   => sub { YAML::Dump(@_); },
-        deserializer => sub { YAML::Load(@_); },
-    };
+    engines:
+      session:
+        DBIC:
+          dsn:      "DBI:mysql:database=testing;host=127.0.0.1;port=3306" # DBI Data Source Name
+          schema_class:    "Interchange6::Schema"  # DBIx::Class schema
+          user:     "user"      # Username used to connect to the database
+          password: "password"  # Password to connect to the database
+          resultset: "MySession" # DBIx::Class resultset, defaults to Session
+          id_column: "my_session_id" # defaults to sessions_id
+          data_column: "my_session_data" # defaults to session_data
 
 =head1 SESSION EXPIRATION
 
@@ -53,60 +48,136 @@ This session engine will not automagically remove expired sessions on the server
 =cut
 
 use strict;
-use parent 'Dancer::Session::Abstract';
 
-use Dancer qw(:syntax);
+# use Dancer2;
 use DBIx::Class;
 use Try::Tiny;
-use Module::Load;
 use Scalar::Util qw(blessed);
 
-our $VERSION = '0.002';
+with 'Dancer2::Core::Role::SessionFactory';
 
 my %dbic_handles;
 
-=head1 METHODS
+=head1 ATTRIBUTES
 
-=head2 create()
+=head2 schema_class
 
-Creates a new session. Returns the session object.
+DBIx::Class schema class, e.g. L<Interchange6::Schema>.
 
 =cut
 
-sub create {
-    return Dancer::Session::DBIC->new->flush;
-}
+has schema_class => (
+    is => 'ro',
+);
 
+=head2 resultset
 
-=head2 flush()
+DBIx::Class resultset, defaults to C<Session>.
+
+=cut
+
+has resultset => (
+    is => 'ro',
+    default => 'Session',
+);
+
+=head2 id_column
+
+Column for session id, defaults to C<sessions_id>.
+
+=cut
+
+has id_column => (
+    is => 'ro',
+    default => 'sessions_id',
+);
+
+=head2 data_column
+
+Column for session data, defaults to C<session_data>.
+
+=cut
+
+has data_column => (
+    is => 'ro',
+    default => 'session_data',
+);
+
+=head2 dsn
+
+L<DBI> dsn to connect to the database.
+
+=cut
+
+has dsn => (
+    is => 'ro',
+);
+
+=head2 user
+
+Database username.
+
+=cut
+
+has user => (
+    is => 'ro',
+);
+
+=head2 password
+
+Database password.
+
+=cut
+
+has password => (
+    is => 'ro',
+);
+
+=head2 schema
+
+L<DBIx::Class> schema.
+
+=cut
+
+has schema => (
+    is => 'ro',
+);
+
+=head1 METHODS
+
+=cut
+
+sub _sessions { return [] };
+
+=head2 _flush
 
 Write the session to the database. Returns the session object.
 
 =cut
 
-sub flush {
-    my $self = shift;
+sub _flush {
+    my ($self, $id, $session) = @_;
     my $handle = $self->_dbic;
 
-    my %session_data = ($handle->{id_column} => $self->id,
-                        $handle->{data_column} => $self->_serialize,
+    my %session_data = ($handle->{id_column} => $id,
+                        $handle->{data_column} => $self->_serialize($session),
                        );
 
-    my $session = $self->_rset->update_or_create(\%session_data);
+    $self->_rset->update_or_create(\%session_data);
 
     return $self;
 }
 
-=head2 retrieve($id)
+=head2 _retrieve($id)
 
 Look for a session with the given id.
 
-Returns the session object if found, C<undef> if not. Logs a debug-level warning
-if the session was found, but could not be deserialized.
+Returns the session object if found, C<undef> if not.
+Dies if the session was found, but could not be deserialized.
 
 =cut
 
-sub retrieve {
+sub _retrieve {
     my ($self, $session_id) = @_;
     my $session_object;
 
@@ -114,7 +185,7 @@ sub retrieve {
 
     # Bail early if we know we have no session data at all
     if (!defined $session_object) {
-        debug "Could not retrieve session ID: $session_id";
+        die "Could not retrieve session ID: $session_id";
         return;
     }
 
@@ -124,25 +195,25 @@ sub retrieve {
     my $session = try {
         $self->_deserialize($session_data);
     } catch {
-        debug "Could not deserialize session ID: $session_id - $_";
+        die "Could not deserialize session ID: $session_id - $_";
         return;
     };
 
-    bless $session, __PACKAGE__ if $session;
+    return $session;
 }
 
 
-=head2 destroy()
+=head2 _destroy()
 
 Remove the current session object from the database.
 
 =cut
 
-sub destroy {
+sub _destroy {
     my $self = shift;
 
     if (!defined $self->id) {
-        debug "No session ID passed to destroy method";
+        die "No session ID passed to destroy method";
         return;
     }
 
@@ -167,32 +238,34 @@ sub _dbic {
         return $handle;
     }
 
-    my $settings = setting('session_options');
-
     # Prefer an active schema over a schema class.
-    if (defined $settings->{schema}) {
-        if (blessed $settings->{schema}) {
-            $handle->{schema} = $settings->{schema};
+    my $schema = $self->schema;
+
+    if (defined $schema) {
+        if (blessed $schema) {
+            $handle->{schema} = $schema;
         }
         else {
-            $handle->{schema} = $settings->{schema}->();
+            $handle->{schema} = $schema->();
         }
     }
-    elsif (! defined $settings->{schema_class}) {
+    elsif (! defined $self->schema_class) {
         die "No schema class defined.";
     }
     else {
-        my $schema_class = $settings->{schema_class};
+        my $schema_class = $self->schema_class;
 
+	my $settings = {};
+ 
         $handle->{schema} = $self->_load_schema_class($schema_class,
-                                                      $settings->{dsn},
-                                                      $settings->{user},
-                                                      $settings->{pass});
+                                                      $self->dsn,
+                                                      $self->user,
+                                                      $self->password);
     }
 
-    $handle->{resultset} = $settings->{resultset} || 'Session';
-    $handle->{id_column} = $settings->{id_column} || 'sessions_id';
-    $handle->{data_column} = $settings->{data_column} || 'session_data';
+    $handle->{resultset} = $self->resultset;
+    $handle->{id_column} = $self->id_column;
+    $handle->{data_column} = $self->data_column;
 
     $dbic_handles{$pid_tid} = $handle;
 
@@ -233,34 +306,38 @@ sub _load_schema_class {
 # Default Serialize method
 sub _serialize {
     my $self = shift;
-    my $settings = setting('session_options');
+    my $session = shift;
 
-    if (defined $settings->{serializer}) {
-        return $settings->{serializer}->({%$self});
-    }
+#    my $settings = setting('session_options');
+
+#    if (defined $settings->{serializer}) {
+#        return $settings->{serializer}->({%$self});
+#    }
 
     # A session is by definition ephemeral - Store it compactly
-    # This is the Dancer function, not from JSON.pm
-    return to_json({%$self}, { pretty => 0 });
+    # This is the Dancer2 function, not from JSON.pm
+    my $json = JSON->new->allow_blessed->convert_blessed;
+    return $json->encode($session);
 }
 
 
 # Default Deserialize method
 sub _deserialize {
     my ($self, $json) = @_;
-    my $settings = setting('session_options');
+#    my $settings = setting('session_options');
 
-    if (defined $settings->{deserializer}) {
-        return $settings->{deserializer}->($json);
-    }
+#    if (defined $settings->{deserializer}) {
+#        return $settings->{deserializer}->($json);
+#    }
 
-    # This is the Dancer function, not from JSON.pm
-    return from_json($json);
+    # This is the Dancer2 function, not from JSON.pm
+    my $json_obj = JSON->new->allow_blessed->convert_blessed;
+    return $json_obj->decode($json);
 }
 
 =head1 SEE ALSO
 
-L<Dancer>, L<Dancer::Session>
+L<Dancer2>, L<Dancer2::Session>
 
 =head1 AUTHOR
 
@@ -268,8 +345,8 @@ Stefan Hornburg (Racke) <racke@linuxia.de>
 
 =head1 ACKNOWLEDGEMENTS
 
-Based on code from L<Dancer::Session::DBI> written by James Aitken
-and code from L<Dancer::Plugin::DBIC> written by Naveed Massjouni.
+Based on code from L<Dance::Session::DBI> written by James Aitken
+and code from L<Dance::Plugin::DBIC> written by Naveed Massjouni.
 
 =head1 COPYRIGHT AND LICENSE
 

@@ -1,10 +1,12 @@
 use strict;
 use warnings;
 
-use Test::More tests => 8;
+use Test::More;
 
-use Dancer::Session::DBIC;
-use Dancer qw(:syntax :tests);
+use Dancer2::Core::Session;
+use Dancer2::Session::DBIC;
+use Plack::Test;
+use HTTP::Request::Common;
 
 use File::Spec;
 use lib File::Spec->catdir( 't', 'lib' );
@@ -18,39 +20,70 @@ test_session_schema('Test::Custom', {resultset => 'Custom',
 
 sub test_session_schema {
     my ($schema_class, $schema_options) = @_;
-
     my $schema = DBICx::TestDatabase->new($schema_class);
 
-    set session => 'DBIC';
-    set session_options => {
-                            %{$schema_options || {}},
-                            schema => sub {return $schema},
-                           };
+    # create object
+    my $dbic_session = Dancer2::Session::DBIC->new(schema => $schema);
 
-    my $session = session->create;
+    isa_ok($dbic_session, 'Dancer2::Session::DBIC');
 
-    isa_ok($session, 'Dancer::Session::DBIC');
+    isa_ok($dbic_session->schema, $schema_class);
 
-    my $session_id = session->id;
+    {
+      package Foo;
 
-    ok(defined($session_id) && $session_id > 0, 'Testing session id')
-        || diag "Session id: ", $session_id;
+      use Dancer2;
 
-    session foo => 'bar';
+      my $options = {%{$schema_options || {}},
+		     schema => sub {return $schema},
+		   };
 
-    my $session_value = session('foo');
+      # engines needs to set before the session itself
+      set engines => {session =>
+			{DBIC => $options}};
 
-    ok($session_value eq 'bar', 'Testing session value')
-        || diag "Session value: ", $session_value;
+      set session => 'DBIC';
 
-    # destroy session
-    session->destroy;
+      get '/id' => sub {
+	return session->id;
+      };
 
-    my $next_session_id = session->id;
+      get '/getfoo' => sub {
+	return session('foo');
+      };
 
-    my $resultset = $schema_options->{resultset} || 'Session';
-    my $ret = $schema->resultset($resultset)->find($session_id);
+      get '/putfoo' => sub {
+	session foo => 'bar';
+	return session('foo');
+      };
+    }
 
-    ok(! defined($ret), 'Testing session destruction')
-        || diag "Return value: ", $ret;
+    my $app =  Dancer2->runner->server->psgi_app;
+
+    is( ref $app, 'CODE', 'Got app' );
+
+    test_psgi $app, sub {
+      my $cb = shift;
+
+      like(
+        $cb->( GET '/id' )->content,
+        qr/^[0-9a-z_-]+$/i,
+        'Retrieve session id',
+      );
+
+      is(
+        $cb->( GET '/getfoo' )->content,
+        '',
+        'Retrieve pristine foo key',
+      );
+
+      is(
+	$cb->( GET '/putfoo' )->content,
+	'bar',
+	'Set foo key to bar',
+	);
+
+    };
 }
+
+done_testing;

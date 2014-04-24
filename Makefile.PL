@@ -15,30 +15,30 @@ my %WriteMakefileArgs = (
   "CONFIGURE_REQUIRES" => {
     "ExtUtils::MakeMaker" => "6.30"
   },
-  "DISTNAME" => "Dancer-Session-DBIC",
+  "DISTNAME" => "Dancer2-Session-DBIC",
   "EXE_FILES" => [],
   "LICENSE" => "perl",
-  "NAME" => "Dancer::Session::DBIC",
+  "NAME" => "Dancer2::Session::DBIC",
   "PREREQ_PM" => {
     "DBIx::Class" => 0,
-    "Dancer" => 0,
+    "Dancer2" => 0,
     "Try::Tiny" => "0.01",
-    "parent" => "0.215",
     "Scalar::Util" => 0,
+    "JSON" => 0,
   },
   "TEST_REQUIRES" => {
     "Test::More" => "0.63",
     "DBICx::TestDatabase" => 0,
     "DBIx::Class::TimeStamp" => 0,
   },
-  "VERSION_FROM" => 'lib/Dancer/Session/DBIC.pm',
+  "VERSION_FROM" => 'lib/Dancer2/Session/DBIC.pm',
   "test" => {
     "TESTS" => "t/*.t"
   },
   META_MERGE        => {
         resources => {
-            repository  => 'https://github.com/interchange/Dancer-Session-DBIC.git',
-            bugtracker => 'https://github.com/interchange/Dancer-Session-DBIC/issues'
+            repository  => 'https://github.com/interchange/Dancer2-Session-DBIC.git',
+            bugtracker => 'https://github.com/interchange/Dancer2-Session-DBIC/issues'
         },
    },
 );

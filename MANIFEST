@@ -3,7 +3,7 @@ MANIFEST
 MANIFEST.SKIP
 Makefile.PL
 README
-lib/Dancer/Session/DBIC.pm
+lib/Dancer2/Session/DBIC.pm
 t/basics.t
 t/lib/Test/Custom.pm
 t/lib/Test/Custom/Result/Custom.pm
