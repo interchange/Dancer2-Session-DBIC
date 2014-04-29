@@ -1,5 +1,11 @@
 Revision history for Dancer2::Session::DBI
 
+0.005 Tue Apr 29 10:06:16 2014 CEST
+
+    [ENHANCEMENTS]
+
+    * Adjust schema test to Dancer2 API change.
+
 0.004 Thu Apr 24 15:27:10 2014 CEST
 
     * Update CHANGES and README.
