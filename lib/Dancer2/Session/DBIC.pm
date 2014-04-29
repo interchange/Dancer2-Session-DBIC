@@ -17,11 +17,9 @@ Dancer2::Session::DBIC - DBIx::Class session engine for Dancer2
 =head1 DESCRIPTION
 
 This module implements a session engine for Dancer2 by serializing the session,
-and storing it in a database via L<DBIx::Class>. The default serialization method is L<JSON>,
-though one can specify any serialization format you want. L<YAML> and L<Storable> are
-viable alternatives.
+and storing it in a database via L<DBIx::Class>.
 
-JSON was chosen as the default serialization format, as it is fast, terse, and portable.
+JSON was chosen as the serialization format, as it is fast, terse, and portable.
 
 =head1 SYNOPSIS
 
