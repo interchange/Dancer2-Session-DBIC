@@ -187,7 +187,8 @@ sub _retrieve {
         return;
     }
 
-    my $session_data = $session_object->session_data;
+    my $data_column  = $self->data_column;
+    my $session_data = $session_object->$data_column;
 
     # No way to check that it's valid JSON other than trying to deserialize it
     my $session = try {
