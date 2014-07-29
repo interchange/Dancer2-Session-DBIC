@@ -179,7 +179,7 @@ sub _retrieve {
     my ($self, $session_id) = @_;
     my $session_object;
 
-    $session_object = $self->_rset->find($session_id);
+    $session_object = $self->_rset->find({ $self->id_column => $session_id });
 
     # Bail early if we know we have no session data at all
     if (!defined $session_object) {
