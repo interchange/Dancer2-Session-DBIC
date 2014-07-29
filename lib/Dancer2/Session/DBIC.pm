@@ -83,6 +83,9 @@ has resultset => (
 
 Column for session id, defaults to C<sessions_id>.
 
+If this column is not the primary key of the table, it should have
+a unique constraint added to it.  See L<DBIx::Class::ResultSource/add_unique_constraint>.
+
 =cut
 
 has id_column => (
