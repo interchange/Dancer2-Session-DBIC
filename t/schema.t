@@ -14,6 +14,7 @@ use lib File::Spec->catdir( 't', 'lib' );
 use DBICx::TestDatabase;
 
 test_session_schema('Test::Schema');
+test_session_schema('Test::SchemaNonPK');
 test_session_schema('Test::Custom', {resultset => 'Custom',
                                      id_column => 'customs_id',
                                      data_column => 'custom_data'});
