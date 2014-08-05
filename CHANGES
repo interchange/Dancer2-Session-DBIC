@@ -1,5 +1,11 @@
 Revision history for Dancer2::Session::DBI
 
+0.006 Tue Aug  5 16:24:29 2014 CEST
+
+    [BUG FIXES]
+
+    * Use try_class_load to test schema module (GH #3, Andy Jack).
+
 0.005 Tue Apr 29 10:06:16 2014 CEST
 
     [ENHANCEMENTS]
