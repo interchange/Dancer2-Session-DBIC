@@ -4,7 +4,7 @@ use Moo;
 use Dancer2::Core::Types;
 use JSON;
 
-our $VERSION = '0.006';
+our $VERSION = '0.007';
 
 =head1 NAME
 
@@ -12,7 +12,7 @@ Dancer2::Session::DBIC - DBIx::Class session engine for Dancer2
 
 =head1 VERSION
 
-0.006
+0.007
 
 =head1 DESCRIPTION
 
