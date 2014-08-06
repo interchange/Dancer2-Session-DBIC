@@ -57,6 +57,17 @@ sub test_session_schema {
             session foo => 'bar';
             return session('foo');
         };
+
+        get '/destroy' => sub {
+            context->destroy_session;
+            return "Session destroyed";
+        };
+
+        get '/destroy' => sub {
+            context->destroy_session;
+            return "Session destroyed";
+        };
+
     }
 
     my $app =  Dancer2->runner->psgi_app;
@@ -83,6 +94,12 @@ sub test_session_schema {
             'bar',
             'Set foo key to bar',
         );
+
+        is(
+           $cb->( GET '/destroy')->content,
+           'Session destroyed',
+           'Session destroyed without crashing',
+          );
 
     };
 }
