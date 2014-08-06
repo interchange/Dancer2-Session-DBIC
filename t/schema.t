@@ -63,9 +63,8 @@ sub test_session_schema {
             return "Session destroyed";
         };
 
-        get '/destroy' => sub {
-            context->destroy_session;
-            return "Session destroyed";
+        get '/sessionid' => sub {
+            return session->id;
         };
 
     }
@@ -96,11 +95,33 @@ sub test_session_schema {
         );
 
         is(
+            $cb->( GET '/getfoo' )->content,
+            'bar',
+            'Retrieve foo key which is "bar" now',
+        );
+
+        like(
+             $cb->( GET '/sessionid' )->content,
+             qr/\w/,
+             "Found session id",
+        );
+        my $oldid = $cb->( GET '/sessionid' )->content;
+
+        is(
            $cb->( GET '/destroy')->content,
            'Session destroyed',
            'Session destroyed without crashing',
           );
 
+        is(
+            $cb->( GET '/getfoo' )->content,
+            '',
+            'Retrieve pristine foo key after destroying',
+        );
+
+        my $newid = $cb->( GET '/sessionid' )->content;
+
+        ok($newid ne $oldid, "New and old ids differ");
     };
 }
 
