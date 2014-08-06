@@ -60,7 +60,13 @@ sub test_session_schema {
         };
 
         get '/destroy' => sub {
-            context->destroy_session;
+            if (app->can('destroy_session')) {
+                app->destroy_session;
+            }
+            # legacy
+            else {
+                context->destroy_session;
+            }
             return "Session destroyed";
         };
 
