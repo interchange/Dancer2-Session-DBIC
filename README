@@ -2,7 +2,7 @@ NAME
     Dancer2::Session::DBIC - DBIx::Class session engine for Dancer2
 
 VERSION
-    0.006
+    0.007
 
 DESCRIPTION
     This module implements a session engine for Dancer2 by serializing the
