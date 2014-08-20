@@ -223,7 +223,7 @@ sub _destroy {
         return;
     }
 
-    $self->_rset->find($id)->delete;
+    $self->_rset->find({ $self->id_column => $id})->delete;
 }
 
 # Creates and connects schema
