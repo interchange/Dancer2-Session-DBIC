@@ -180,7 +180,7 @@ sub _retrieve {
     my ($self, $session_id) = @_;
     my $session_object;
 
-    $session_object = $self->_rset->find($session_id);
+    $session_object = $self->_rset->find($session_id, {key=>'primary'});
 
     # Bail early if we know we have no session data at all
     if (!defined $session_object) {
@@ -188,7 +188,7 @@ sub _retrieve {
         return;
     }
 
-    my $session_data = $session_object->session_data;
+    my $session_data = $session_object->get_column($self->data_column);
 
     # No way to check that it's valid JSON other than trying to deserialize it
     my $session = try {
