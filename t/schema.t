@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 
+use utf8;
 use Test::More;
 
 use Dancer2::Core::Session;
@@ -67,6 +68,15 @@ sub test_session_schema {
             return session('foo');
         };
 
+        get '/getcamel' => sub {
+            return session('camel');
+        };
+
+        get '/putcamel' => sub {
+            session camel => 'ラクダ';
+            return session('camel');
+        };
+
         get '/destroy' => sub {
             if (app->can('destroy_session')) {
                 app->destroy_session;
@@ -122,6 +132,24 @@ sub test_session_schema {
             $cb->( GET '/getfoo', @headers )->content,
             'bar',
             'Retrieve foo key which is "bar" now',
+        );
+
+        is(
+            $cb->( GET '/getcamel', @headers )->content,
+            '',
+            'Retrieve pristine camel key',
+        );
+
+        is(
+            $cb->( GET '/putcamel', @headers )->content,
+            'ラクダ',
+            'Set camel key to ラクダ',
+        );
+
+        is(
+            $cb->( GET '/getcamel', @headers )->content,
+            'ラクダ',
+            'Retrieve camel key which is "ラクダ" now',
         );
 
         like(
