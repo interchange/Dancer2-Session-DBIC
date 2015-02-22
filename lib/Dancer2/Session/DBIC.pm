@@ -84,6 +84,9 @@ has resultset => (
 
 Column for session id, defaults to C<sessions_id>.
 
+If this column is not the primary key of the table, it should have
+a unique constraint added to it.  See L<DBIx::Class::ResultSource/add_unique_constraint>.
+
 =cut
 
 has id_column => (
@@ -180,7 +183,7 @@ sub _retrieve {
     my ($self, $session_id) = @_;
     my $session_object;
 
-    $session_object = $self->_rset->find($session_id);
+    $session_object = $self->_rset->find({ $self->id_column => $session_id });
 
     # Bail early if we know we have no session data at all
     if (!defined $session_object) {
@@ -188,7 +191,8 @@ sub _retrieve {
         return;
     }
 
-    my $session_data = $session_object->session_data;
+    my $data_column  = $self->data_column;
+    my $session_data = $session_object->$data_column;
 
     # No way to check that it's valid JSON other than trying to deserialize it
     my $session = try {
@@ -219,7 +223,7 @@ sub _destroy {
         return;
     }
 
-    $self->_rset->find($id)->delete;
+    $self->_rset->find({ $self->id_column => $id})->delete;
 }
 
 # Creates and connects schema
