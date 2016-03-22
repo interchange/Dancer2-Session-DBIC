@@ -2,7 +2,7 @@ package Dancer2::Session::DBIC;
 
 use Moo;
 use Dancer2::Core::Types;
-use JSON;
+use Dancer2::Serializer::JSON;
 
 our $VERSION = '0.007';
 
@@ -320,8 +320,8 @@ sub _serialize {
 
     # A session is by definition ephemeral - Store it compactly
     # This is the Dancer2 function, not from JSON.pm
-    my $json = JSON->new->allow_blessed->convert_blessed;
-    return $json->encode($session);
+    return Dancer2::Serializer::JSON::to_json( $session,
+        { allow_blessed => 1, convert_blessed => 1, utf8 => 0 } );
 }
 
 
@@ -335,8 +335,8 @@ sub _deserialize {
 #    }
 
     # This is the Dancer2 function, not from JSON.pm
-    my $json_obj = JSON->new->allow_blessed->convert_blessed;
-    return $json_obj->decode($json);
+    return Dancer2::Serializer::JSON::from_json( $json,
+        { allow_blessed => 1, convert_blessed => 1, utf8 => 0 } );
 }
 
 =head1 SEE ALSO
