@@ -22,12 +22,15 @@ test_session_schema('Test::Custom', {resultset => 'Custom',
                                      data_column => 'custom_data'});
 
 sub test_session_schema {
+    %Dancer2::Session::DBIC::dbic_handles = ();
     my ($schema_class, $schema_options) = @_;
+    note "Testing $schema_class";
     my $schema = DBICx::TestDatabase->new($schema_class);
     $schema_options ||= {};
 
     # create object
-    my $dbic_session = Dancer2::Session::DBIC->new(schema => $schema);
+    my $dbic_session =
+      Dancer2::Session::DBIC->new( schema => $schema, %$schema_options );
 
     isa_ok($dbic_session, 'Dancer2::Session::DBIC');
 
@@ -36,8 +39,14 @@ sub test_session_schema {
     my $pk = $dbic_session->id_column;
     my $pk_expected = $schema_options->{id_column} || 'sessions_id';
 
-    ok($pk eq $pk_expected, "Test name of column for session ID for $schema_class")
-        || diag "Column name found: $pk";
+    cmp_ok( $pk, 'eq', $pk_expected,
+        "Test name of column for session ID for $schema_class" );
+
+    my $rs = $dbic_session->resultset;
+    my $rs_expected = $schema_options->{resultset} || 'Session';
+
+    cmp_ok($rs, 'eq', $rs_expected, "Test name of resultset for $schema_class");
+
 
     {
         package Foo;

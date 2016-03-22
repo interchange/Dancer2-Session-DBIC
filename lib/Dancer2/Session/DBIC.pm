@@ -47,7 +47,6 @@ This session engine will not automagically remove expired sessions on the server
 
 use strict;
 
-# use Dancer2;
 use DBIx::Class;
 use Try::Tiny;
 use Scalar::Util qw(blessed);
@@ -55,7 +54,7 @@ use Class::Load qw( try_load_class );
 
 with 'Dancer2::Core::Role::SessionFactory';
 
-my %dbic_handles;
+our %dbic_handles;
 
 =head1 ATTRIBUTES
 
