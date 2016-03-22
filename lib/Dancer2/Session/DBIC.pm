@@ -50,7 +50,7 @@ use strict;
 use DBIx::Class;
 use Try::Tiny;
 use Scalar::Util qw(blessed);
-use Class::Load qw( try_load_class );
+use Module::Runtime 'use_module';
 
 with 'Dancer2::Core::Role::SessionFactory';
 
@@ -293,13 +293,22 @@ sub _load_schema_class {
 
     if ($schema_class) {
         $schema_class =~ s/-/::/g;
-        my ($ok,$err) = try_load_class($schema_class);
-        die "Could not load schema_class $schema_class: $err" unless $ok;
+        try {
+            use_module($schema_class);
+        }
+        catch {
+            die "Could not load schema_class $schema_class: $_";
+        };
         $schema_object = $schema_class->connect(@conn_info);
     } else {
         my $dbic_loader = 'DBIx::Class::Schema::Loader';
-        my ($ok,$err) = try_load_class($dbic_loader);
-        die "You must provide a schema_class option or install $dbic_loader." unless $ok;
+        try {
+            use_module($dbic_loader);
+        }
+        catch {
+            die
+              "You must provide a schema_class option or install $dbic_loader.";
+        };
         $dbic_loader->naming('v7');
         $schema_object = DBIx::Class::Schema::Loader->connect(@conn_info);
     }

@@ -24,6 +24,7 @@ my %WriteMakefileArgs = (
     "Dancer2" => "0.14",
     "Try::Tiny" => "0.01",
     "Scalar::Util" => 0,
+    "Module::Runtime" => 0,
   },
   "TEST_REQUIRES" => {
     "Test::More" => "0.63",
