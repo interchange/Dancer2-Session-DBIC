@@ -103,7 +103,7 @@ sub test_session_schema {
 
         my $res = $cb->( GET '/sessionid' );
 
-        my $newid = $res->content;
+        my $newid = $res->decoded_content;
         # extract the cookie
         my $cookie = $res->header('Set-Cookie');
         $cookie =~ s/^(.*?);.*$/$1/s;
@@ -111,68 +111,68 @@ sub test_session_schema {
         my @headers = (Cookie => $cookie);
 
         like(
-            $cb->( GET '/id', @headers)->content,
+            $cb->( GET '/id', @headers)->decoded_content,
             qr/^[0-9a-z_-]+$/i,
             'Retrieve session id',
         );
 
         is(
-            $cb->( GET '/getfoo', @headers )->content,
+            $cb->( GET '/getfoo', @headers )->decoded_content,
             '',
             'Retrieve pristine foo key',
         );
 
         is(
-            $cb->( GET '/putfoo', @headers )->content,
+            $cb->( GET '/putfoo', @headers )->decoded_content,
             'bar',
             'Set foo key to bar',
         );
 
         is(
-            $cb->( GET '/getfoo', @headers )->content,
+            $cb->( GET '/getfoo', @headers )->decoded_content,
             'bar',
             'Retrieve foo key which is "bar" now',
         );
 
         is(
-            $cb->( GET '/getcamel', @headers )->content,
+            $cb->( GET '/getcamel', @headers )->decoded_content,
             '',
             'Retrieve pristine camel key',
         );
 
         is(
-            $cb->( GET '/putcamel', @headers )->content,
+            $cb->( GET '/putcamel', @headers )->decoded_content,
             'ラクダ',
             'Set camel key to ラクダ',
         );
 
         is(
-            $cb->( GET '/getcamel', @headers )->content,
+            $cb->( GET '/getcamel', @headers )->decoded_content,
             'ラクダ',
             'Retrieve camel key which is "ラクダ" now',
         );
 
         like(
-             $cb->( GET '/sessionid', @headers )->content,
+             $cb->( GET '/sessionid', @headers )->decoded_content,
              qr/\w/,
              "Found session id",
         );
-        my $oldid = $cb->( GET '/sessionid', @headers )->content;
+        my $oldid = $cb->( GET '/sessionid', @headers )->decoded_content;
         is($oldid, $newid, "Same id, session holds");
 
         is(
-           $cb->( GET '/destroy', @headers)->content,
+           $cb->( GET '/destroy', @headers)->decoded_content,
            'Session destroyed',
            'Session destroyed without crashing',
           );
 
         is(
-            $cb->( GET '/getfoo', @headers )->content,
+            $cb->( GET '/getfoo', @headers )->decoded_content,
             '',
             'Retrieve pristine foo key after destroying',
         );
 
-        $newid = $cb->( GET '/sessionid', @headers )->content;
+        $newid = $cb->( GET '/sessionid', @headers )->decoded_content;
 
         ok($newid ne $oldid, "New and old ids differ");
     };
