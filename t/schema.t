@@ -18,8 +18,8 @@ use DBICx::TestDatabase;
 test_session_schema('Test::Schema');
 test_session_schema('Test::SchemaNonPK');
 test_session_schema('Test::Custom', {resultset => 'Custom',
-                                     id_column => 'customs_id',
-                                     data_column => 'custom_data'});
+                                     id_column => 'id',
+                                     data_column => 'data'});
 
 sub test_session_schema {
     %Dancer2::Session::DBIC::dbic_handles = ();
