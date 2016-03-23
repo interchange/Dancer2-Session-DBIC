@@ -6,6 +6,11 @@ use Test::More;
 use Test::Deep;
 use Test::Fatal;
 
+BEGIN {
+    eval "use YAML";
+    plan skip_all => "YAML required to run these tests" if $@;
+}
+
 use Dancer2::Session::DBIC::Serializer::YAML;
 
 my ( $serializer, $result );
