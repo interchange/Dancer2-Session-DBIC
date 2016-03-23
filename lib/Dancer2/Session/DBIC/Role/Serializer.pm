@@ -30,7 +30,7 @@ The following methods must be provided by any class which consumes this role:
 
 =head2 serialize_options
 
-Options to be based to the constructor of the underlying serializer class
+Options to be passed to the constructor of the underlying serializer class
 as a hash reference.
 
 Defaults to an empty hash reference.
@@ -45,7 +45,7 @@ has serialize_options => (
 
 =head2 deserialize_options
 
-Options to be based to the constructor of the underlying deserializer class
+Options to be passed to the constructor of the underlying deserializer class
 as a hash reference.
 
 Defaults to an empty hash reference.
