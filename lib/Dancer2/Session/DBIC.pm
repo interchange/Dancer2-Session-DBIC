@@ -46,6 +46,16 @@ Example configuration:
           data_column: "my_session_data" # defaults to session_data
           serializer: "YAML"    # defaults to JSON
 
+Or if you are already using L<Dancer2::Plugin::DBIC> and want to use its
+existing configuration for a database section named 'default' with all else
+set to default in this module then you could simply use:
+
+    session: "DBIC"
+    engines:
+      session:
+        DBIC:
+          db_connection_name: default
+
 =head1 SESSION EXPIRATION
 
 A timestamp field that updates when a session is updated is recommended, so you can expire sessions server-side as well as client-side.
@@ -64,6 +74,20 @@ DBIx::Class schema class, e.g. L<Interchange6::Schema>.
 
 has schema_class => (
     is => 'ro',
+    isa => Str,
+);
+
+=head2 db_connection_name
+
+The L<Dancer2::Plugin::DBIC> database connection name.
+
+If this option is provided then L</schema_class>, L</dsn>, L</user> and
+L</password> are all ignored.
+
+=cut
+
+has db_connection_name => (
+    is  => 'ro',
     isa => Str,
 );
 
@@ -145,7 +169,6 @@ L<DBIx::Class> schema.
 
 has schema => (
     is => 'ro',
-    #isa => CodeRef,
 );
 
 =head2 serializer
@@ -342,6 +365,16 @@ sub _dbic {
         else {
             $handle->{schema} = $schema->();
         }
+    }
+    elsif ( $self->db_connection_name ) {
+        my $plugin;
+        try {
+            $plugin = use_module('Dancer2::Plugin::DBIC');
+        }
+        catch {
+            die "db_connection_name given but Dancer2::Plugin::DBIC dies $_";
+        };
+        $handle->{schema} = $plugin->schema($self->db_connection_name);
     }
     elsif (! defined $self->schema_class) {
         die "No schema class defined.";

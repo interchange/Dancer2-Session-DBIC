@@ -16,6 +16,7 @@ t/lib/Test/Schema/Result/Session.pm
 t/lib/Test/SchemaNonPK.pm
 t/lib/Test/SchemaNonPK/Result/Session.pm
 t/manifest.t
+t/plugin_dbic.t 
 t/pod.t
 t/pod-coverage.t
 t/schema.t
