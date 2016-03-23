@@ -4,6 +4,9 @@ MANIFEST.SKIP
 Makefile.PL
 README
 lib/Dancer2/Session/DBIC.pm
+lib/Dancer2/Session/DBIC/Role/Serializer.pm
+lib/Dancer2/Session/DBIC/Serializer/JSON.pm
+lib/Dancer2/Session/DBIC/Serializer/YAML.pm
 t/basics.t
 t/lib/Test/Custom.pm
 t/lib/Test/Custom/Result/Custom.pm
@@ -15,4 +18,5 @@ t/manifest.t
 t/pod.t
 t/pod-coverage.t
 t/schema.t
-
+t/serializers/json.t
+t/serializers/yaml.t
