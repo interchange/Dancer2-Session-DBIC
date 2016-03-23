@@ -21,11 +21,23 @@ test_session_schema('Test::Custom', {resultset => 'Custom',
                                      data_column => 'data'});
 
 # also test with specific serializers
-foreach my $serializer ( 'JSON', 'YAML' ) {
+foreach my $serializer ( 'JSON', 'Sereal', 'YAML' ) {
 
     # some underlying modules are not prereqs so check here if we can
     # require the underlying module for all serializers except JSON
-    if ( $serializer eq 'YAML' ) {
+    if ( $serializer eq 'Sereal' ) {
+        eval "use Sereal::Encoder";
+        if ( $@ ) {
+            diag "Sereal::Encoder not installed";
+            next;
+        }
+        eval "use Sereal::Decoder";
+        if ( $@ ) {
+            diag "Sereal::Decoder not installed";
+            next;
+        }
+    }
+    elsif ( $serializer eq 'YAML' ) {
         eval "use YAML";
         if ( $@ ) {
             diag "YAML not installed";

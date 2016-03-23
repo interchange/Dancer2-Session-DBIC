@@ -157,6 +157,8 @@ L<Dancer2::Session::DBIC> provides the following serializer classes:
 
 =item JSON - L<Dancer2::Session::DBIC::Serializer::JSON>
 
+=item Sereal - L<Dancer2::Session::DBIC::Serializer::Sereal>
+
 =item YAML - L<Dancer2::Session::DBIC::Serializer::YAML>
 
 =back
