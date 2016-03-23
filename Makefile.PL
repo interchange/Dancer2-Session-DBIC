@@ -28,6 +28,8 @@ my %WriteMakefileArgs = (
     "JSON::MaybeXS" => 0,
   },
   "TEST_REQUIRES" => {
+    "Test::Deep" => 0,
+    "Test::Fatal" => 0,
     "Test::More" => "0.63",
     "DBICx::TestDatabase" => 0,
     "DBIx::Class::TimeStamp" => 0,
