@@ -36,12 +36,13 @@ my %WriteMakefileArgs = (
   },
   "VERSION_FROM" => 'lib/Dancer2/Session/DBIC.pm',
   "test" => {
-    "TESTS" => "t/*.t"
+    "TESTS" => join( ' ', ( glob('t/*.t'), glob('t/*/*.t') ) )
   },
   META_MERGE        => {
         resources => {
-            repository  => 'https://github.com/interchange/Dancer2-Session-DBIC.git',
+            repository => 'https://github.com/interchange/Dancer2-Session-DBIC.git',
             bugtracker => 'https://github.com/interchange/Dancer2-Session-DBIC/issues'
+            IRC => 'irc://irc.perl.org/#dancer',
         },
    },
 );
