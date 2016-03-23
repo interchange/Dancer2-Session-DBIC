@@ -5,7 +5,6 @@ use utf8;
 use open ':std', ':encoding(utf8)';
 use Test::More;
 
-use Dancer2::Core::Session;
 use Dancer2::Session::DBIC;
 use Plack::Test;
 use HTTP::Request::Common;
@@ -13,7 +12,6 @@ use HTTP::Request::Common;
 use File::Spec;
 use lib File::Spec->catdir( 't', 'lib' );
 
-use Data::Dumper;
 use DBICx::TestDatabase;
 
 test_session_schema('Test::Schema');
@@ -22,9 +20,31 @@ test_session_schema('Test::Custom', {resultset => 'Custom',
                                      id_column => 'id',
                                      data_column => 'data'});
 
+# also test with specific serializers
+foreach my $serializer ( 'JSON', 'YAML' ) {
+
+    # some underlying modules are not prereqs so check here if we can
+    # require the underlying module for all serializers except JSON
+    if ( $serializer eq 'YAML' ) {
+        eval "use YAML";
+        if ( $@ ) {
+            diag "YAML not installed";
+            next;
+        }
+    }
+
+    note "setting serialzier to $serializer";
+    my $dbic_session =
+      test_session_schema( 'Test::Schema', { serializer => $serializer } );
+
+    isa_ok( $dbic_session->serializer_object,
+        "Dancer2::Session::DBIC::Serializer::$serializer" );
+}
+
 sub test_session_schema {
     %Dancer2::Session::DBIC::dbic_handles = ();
     my ($schema_class, $schema_options) = @_;
+
     note "Testing $schema_class";
     my $schema = DBICx::TestDatabase->new($schema_class);
     $schema_options ||= {};
@@ -47,7 +67,6 @@ sub test_session_schema {
     my $rs_expected = $schema_options->{resultset} || 'Session';
 
     cmp_ok($rs, 'eq', $rs_expected, "Test name of resultset for $schema_class");
-
 
     {
         package Foo;
@@ -120,8 +139,9 @@ sub test_session_schema {
         ok ($cookie, "Got the cookie: $cookie");
         my @headers = (Cookie => $cookie);
 
+        my $session_id = $cb->( GET '/id', @headers)->decoded_content;
         like(
-            $cb->( GET '/id', @headers)->decoded_content,
+            $session_id,
             qr/^[0-9a-z_-]+$/i,
             'Retrieve session id',
         );
@@ -186,6 +206,8 @@ sub test_session_schema {
 
         ok($newid ne $oldid, "New and old ids differ");
     };
+
+    return $dbic_session;
 }
 
 done_testing;

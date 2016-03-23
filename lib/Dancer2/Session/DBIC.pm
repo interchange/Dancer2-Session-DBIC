@@ -1,8 +1,15 @@
 package Dancer2::Session::DBIC;
 
-use Moo;
 use Dancer2::Core::Types;
-use Dancer2::Serializer::JSON;
+use DBIx::Class;
+use Scalar::Util 'blessed';
+use Module::Runtime 'use_module';
+use Try::Tiny;
+
+our %dbic_handles;
+
+use Moo;
+with 'Dancer2::Core::Role::SessionFactory';
 
 our $VERSION = '0.007';
 
@@ -36,6 +43,7 @@ Example configuration:
           resultset: "MySession" # DBIx::Class resultset, defaults to Session
           id_column: "my_session_id" # defaults to sessions_id
           data_column: "my_session_data" # defaults to session_data
+          serializer: "YAML"    # defaults to JSON
 
 =head1 SESSION EXPIRATION
 
@@ -44,17 +52,6 @@ A timestamp field that updates when a session is updated is recommended, so you 
 This session engine will not automagically remove expired sessions on the server, but with a timestamp field as above, you should be able to to do this manually.
 
 =cut
-
-use strict;
-
-use DBIx::Class;
-use Try::Tiny;
-use Scalar::Util qw(blessed);
-use Module::Runtime 'use_module';
-
-with 'Dancer2::Core::Role::SessionFactory';
-
-our %dbic_handles;
 
 =head1 ATTRIBUTES
 
@@ -66,6 +63,7 @@ DBIx::Class schema class, e.g. L<Interchange6::Schema>.
 
 has schema_class => (
     is => 'ro',
+    isa => Str,
 );
 
 =head2 resultset
@@ -76,6 +74,7 @@ DBIx::Class resultset, defaults to C<Session>.
 
 has resultset => (
     is => 'ro',
+    isa => Str,
     default => 'Session',
 );
 
@@ -90,6 +89,7 @@ a unique constraint added to it.  See L<DBIx::Class::ResultSource/add_unique_con
 
 has id_column => (
     is => 'ro',
+    isa => Str,
     default => 'sessions_id',
 );
 
@@ -101,6 +101,7 @@ Column for session data, defaults to C<session_data>.
 
 has data_column => (
     is => 'ro',
+    isa => Str,
     default => 'session_data',
 );
 
@@ -112,6 +113,7 @@ L<DBI> dsn to connect to the database.
 
 has dsn => (
     is => 'ro',
+    isa => Str,
 );
 
 =head2 user
@@ -142,6 +144,90 @@ L<DBIx::Class> schema.
 
 has schema => (
     is => 'ro',
+    #isa => CodeRef,
+);
+
+=head2 serializer
+
+Serializer to use, defaults to JSON.
+
+L<Dancer2::Session::DBIC> provides the following serializer classes:
+
+=over
+
+=item JSON - L<Dancer2::Session::DBIC::Serializer::JSON>
+
+=item YAML - L<Dancer2::Session::DBIC::Serializer::YAML>
+
+=back
+
+If you do not use the default JSON serializer then you might need to install
+additional modules - see the specific serializer class for details.
+
+You can also use your own serializer class by passing the fully-qualified class
+name as argument to this option, e.g.: MyApp::Session::Serializer
+
+=cut
+
+has serializer => (
+    is      => 'ro',
+    isa     => Str,
+    default => 'JSON',
+);
+
+=head2 serializer_object
+
+Vivified L</serializer> object.
+
+=cut
+
+has serializer_object => (
+    is  => 'lazy',
+    isa => Object,
+);
+
+sub _build_serializer_object {
+    my $self  = shift;
+    my $class = $self->serializer;
+    if ( $class !~ /::/ ) {
+        $class = __PACKAGE__ . "::Serializer::$class";
+    }
+
+    my %args;
+
+    $args{serialize_options} = $self->serialize_options
+      if $self->serialize_options;
+
+    $args{deserialize_options} = $self->deserialize_options
+      if $self->deserialize_options;
+
+    use_module($class)->new(%args);
+}
+
+=head2 serialize_options
+
+Options to be based to the constructor of the the L</serializer> class
+as a hash reference.
+
+=cut
+
+has serialize_options => (
+    is      => 'ro',
+    isa     => HashRef,
+    default => sub { {} },
+);
+
+=head2 deserialize_options
+
+Options to be based to the constructor of the the L</deserializer> class
+as a hash reference.
+
+=cut
+
+has deserialize_options => (
+    is      => 'ro',
+    isa     => HashRef,
+    default => sub { {} },
 );
 
 =head1 METHODS
@@ -161,7 +247,7 @@ sub _flush {
     my $handle = $self->_dbic;
 
     my %session_data = ($handle->{id_column} => $id,
-                        $handle->{data_column} => $self->_serialize($session),
+                        $handle->{data_column} => $self->serializer_object->serialize($session),
                        );
 
     $self->_rset->update_or_create(\%session_data);
@@ -195,7 +281,7 @@ sub _retrieve {
 
     # No way to check that it's valid JSON other than trying to deserialize it
     my $session = try {
-        $self->_deserialize($session_data);
+        $self->serializer_object->deserialize($session_data);
     } catch {
         die "Could not deserialize session ID: $session_id - $_";
         return;
@@ -314,38 +400,6 @@ sub _load_schema_class {
     }
 
     return $schema_object;
-}
-
-# Default Serialize method
-sub _serialize {
-    my $self = shift;
-    my $session = shift;
-
-#    my $settings = setting('session_options');
-
-#    if (defined $settings->{serializer}) {
-#        return $settings->{serializer}->({%$self});
-#    }
-
-    # A session is by definition ephemeral - Store it compactly
-    # This is the Dancer2 function, not from JSON.pm
-    return Dancer2::Serializer::JSON::to_json( $session,
-        { allow_blessed => 1, convert_blessed => 1, utf8 => 0 } );
-}
-
-
-# Default Deserialize method
-sub _deserialize {
-    my ($self, $json) = @_;
-#    my $settings = setting('session_options');
-
-#    if (defined $settings->{deserializer}) {
-#        return $settings->{deserializer}->($json);
-#    }
-
-    # This is the Dancer2 function, not from JSON.pm
-    return Dancer2::Serializer::JSON::from_json( $json,
-        { allow_blessed => 1, convert_blessed => 1, utf8 => 0 } );
 }
 
 =head1 SEE ALSO
