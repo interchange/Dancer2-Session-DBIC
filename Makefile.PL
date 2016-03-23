@@ -41,7 +41,7 @@ my %WriteMakefileArgs = (
   META_MERGE        => {
         resources => {
             repository => 'https://github.com/interchange/Dancer2-Session-DBIC.git',
-            bugtracker => 'https://github.com/interchange/Dancer2-Session-DBIC/issues'
+            bugtracker => 'https://github.com/interchange/Dancer2-Session-DBIC/issues',
             IRC => 'irc://irc.perl.org/#dancer',
         },
    },
