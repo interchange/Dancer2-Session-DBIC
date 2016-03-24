@@ -10,6 +10,7 @@ our %dbic_handles;
 
 use Moo;
 with 'Dancer2::Core::Role::SessionFactory';
+use namespace::clean;
 
 our $VERSION = '0.007';
 

@@ -26,6 +26,7 @@ my %WriteMakefileArgs = (
     "Scalar::Util" => 0,
     "Module::Runtime" => 0,
     "JSON::MaybeXS" => 0,
+    "namespace::clean" => 0,
   },
   "TEST_REQUIRES" => {
     "Test::Deep" => 0,

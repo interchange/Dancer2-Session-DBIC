@@ -16,6 +16,7 @@ use YAML::Dumper;
 use YAML::Loader;
 use Moo;
 with 'Dancer2::Session::DBIC::Role::Serializer';
+use namespace::clean;
 
 =head1 ATTRIBUTES
 

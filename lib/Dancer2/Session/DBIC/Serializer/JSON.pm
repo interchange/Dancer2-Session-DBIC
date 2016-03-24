@@ -13,6 +13,7 @@ Use L<JSON::MaybeXS> serialization for session storage.
 use JSON::MaybeXS;
 use Moo;
 with 'Dancer2::Session::DBIC::Role::Serializer';
+use namespace::clean;
 
 =head1 ATTRIBUTES
 

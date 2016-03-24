@@ -14,6 +14,7 @@ use Sereal::Encoder;
 use Sereal::Decoder;
 use Moo;
 with 'Dancer2::Session::DBIC::Role::Serializer';
+use namespace::clean;
 
 =head1 ATTRIBUTES
 
