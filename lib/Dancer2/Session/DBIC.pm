@@ -368,14 +368,13 @@ sub _dbic {
         }
     }
     elsif ( $self->db_connection_name ) {
-        my $plugin;
         try {
-            $plugin = use_module('Dancer2::Plugin::DBIC');
+            use_module('DBICx::Sugar');
         }
         catch {
-            die "db_connection_name given but Dancer2::Plugin::DBIC dies $_";
+            die "db_connection_name given but DBICx::Sugar fails to load $_";
         };
-        $handle->{schema} = $plugin->schema($self->db_connection_name);
+        $handle->{schema} = DBICx::Sugar::schema($self->db_connection_name);
     }
     elsif (! defined $self->schema_class) {
         die "No schema class defined.";
