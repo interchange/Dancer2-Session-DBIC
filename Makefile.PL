@@ -21,6 +21,7 @@ my %WriteMakefileArgs = (
   "NAME" => "Dancer2::Session::DBIC",
   "PREREQ_PM" => {
     "DBIx::Class" => 0,
+    "DBICx::Sugar" => 0,
     "Dancer2" => "0.14",
     "Try::Tiny" => "0.01",
     "Scalar::Util" => 0,
