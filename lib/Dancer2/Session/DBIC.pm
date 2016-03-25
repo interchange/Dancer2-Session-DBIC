@@ -448,8 +448,8 @@ Stefan Hornburg (Racke) <racke@linuxia.de>
 
 =head1 ACKNOWLEDGEMENTS
 
-Based on code from L<Dance::Session::DBI> written by James Aitken
-and code from L<Dance::Plugin::DBIC> written by Naveed Massjouni.
+Based on code from L<Dancer::Session::DBI> written by James Aitken
+and code from L<Dancer::Plugin::DBIC> written by Naveed Massjouni.
 
 =head1 COPYRIGHT AND LICENSE
 
