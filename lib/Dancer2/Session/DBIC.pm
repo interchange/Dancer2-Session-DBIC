@@ -2,6 +2,7 @@ package Dancer2::Session::DBIC;
 
 use Dancer2::Core::Types;
 use DBIx::Class;
+use DBICx::Sugar;
 use Scalar::Util 'blessed';
 use Module::Runtime 'use_module';
 use Try::Tiny;
@@ -368,12 +369,6 @@ sub _dbic {
         }
     }
     elsif ( $self->db_connection_name ) {
-        try {
-            use_module('DBICx::Sugar');
-        }
-        catch {
-            die "db_connection_name given but DBICx::Sugar fails to load $_";
-        };
         $handle->{schema} = DBICx::Sugar::schema($self->db_connection_name);
     }
     elsif (! defined $self->schema_class) {
