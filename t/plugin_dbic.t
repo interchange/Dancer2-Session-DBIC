@@ -12,6 +12,7 @@ BEGIN {
       if $@;
 }
 
+diag "Dancer2::Plugin::DBIC version: ", $Dancer2::Plugin::DBIC::VERSION;
 use Plack::Test;
 use HTTP::Request::Common;
 
