@@ -447,7 +447,7 @@ Based on code from L<Dancer::Session::DBI> written by James Aitken
 and code from L<Dancer::Plugin::DBIC> written by Naveed Massjouni.
 
 Peter Mottram, support for JSON, YAML, Sereal and custom
-serializers, GH #8, #9.
+serializers, GH #8, #9, #11, #12.
 
 Rory Zweistra, GH #9.
 
