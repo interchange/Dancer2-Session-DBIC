@@ -4,7 +4,7 @@ NAME
 
 VERSION
 
-    0.100
+    0.101
 
 DESCRIPTION
 
@@ -161,7 +161,7 @@ ACKNOWLEDGEMENTS
     code from Dancer::Plugin::DBIC written by Naveed Massjouni.
 
     Peter Mottram, support for JSON, YAML, Sereal and custom serializers,
-    GH #8, #9.
+    GH #8, #9, #11, #12.
 
     Rory Zweistra, GH #9.
 

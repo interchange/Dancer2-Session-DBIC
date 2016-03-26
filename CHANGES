@@ -1,5 +1,15 @@
 Revision history for Dancer2::Session::DBI
 
+0.101 Sat Mar 26 16:50:35 2016 CET
+
+    [BUG FIXES]
+
+    * Require minimum version of 1.15 for YAML (Peter Mottram, GH #11).
+
+    [TEST]
+
+    * Add diagnostics to DBIC plugin test (Peter Mottram, GH #12).
+
 0.100 Fri Mar 25 07:23:18 2016 CET
 
     [ENHANCEMENTS]
