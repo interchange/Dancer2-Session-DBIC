@@ -8,10 +8,11 @@ Dancer2::Session::DBIC::Serializer::YAML
 
 Use YAML serialization for session storage.
 
-B<NOTE:> you must install L<YAML> to use this serializer.
+B<NOTE:> you must install L<YAML> version >= 1.15 to use this serializer.
 
 =cut
 
+use YAML 1.15 ();
 use YAML::Dumper;
 use YAML::Loader;
 use Moo;
