@@ -1,5 +1,14 @@
 Revision history for Dancer2::Session::DBI
 
+0.102 Sun Mar 27 08:49:17 2016 CEST
+
+    [BUG FIXES]
+
+    * Check for YAML minimum version before using YAML serializer in
+      schema tests (Stefan Hornburg/Racke, GH #11).
+    * Require Dancer2::Plugin::DBIC 0.0009 to run plugin tests
+      (Stefan Hornburg/Racke, GH #12).
+
 0.101 Sat Mar 26 16:50:35 2016 CET
 
     [BUG FIXES]
