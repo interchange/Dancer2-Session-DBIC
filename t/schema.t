@@ -38,9 +38,9 @@ foreach my $serializer ( 'JSON', 'Sereal', 'YAML' ) {
         }
     }
     elsif ( $serializer eq 'YAML' ) {
-        eval "use YAML";
+        eval "use YAML 1.15";
         if ( $@ ) {
-            diag "YAML not installed";
+            diag "YAML minimum version 1.15 not installed";
             next;
         }
     }
