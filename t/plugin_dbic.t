@@ -7,8 +7,8 @@ use Test::More;
 
 BEGIN {
     eval "use Dancer2";
-    eval "require Dancer2::Plugin::DBIC";
-    plan skip_all => "Dancer2::Plugin::DBIC must be installed to run this test"
+    eval "use Dancer2::Plugin::DBIC 0.0009";
+    plan skip_all => "Dancer2::Plugin::DBIC 0.0009 required to run this test"
       if $@;
 }
 
