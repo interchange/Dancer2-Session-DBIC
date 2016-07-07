@@ -118,6 +118,17 @@ sub test_session_schema {
             return session('camel');
         };
 
+        get '/change_session_id' => sub {
+            if ( app->can('change_session_id') ) {
+
+                # Dancer2 > 0.200003
+                app->change_session_id;
+            }
+            else {
+                return "unsupported";
+            }
+        };
+
         get '/destroy' => sub {
             if (app->can('destroy_session')) {
                 app->destroy_session;
@@ -201,6 +212,27 @@ sub test_session_schema {
         );
         my $oldid = $cb->( GET '/sessionid', @headers )->decoded_content;
         is($oldid, $newid, "Same id, session holds");
+
+        $res = $cb->( GET '/change_session_id', @headers );
+        $newid = $res->decoded_content;
+        SKIP: {
+            skip "This Dancer2 version does not support change_session_id", 3
+              unless $newid ne 'unsupported';
+
+            isnt( $oldid, $newid,
+                "after change_session_id we have new ID in response" );
+
+            $cookie = $res->header('Set-Cookie');
+            $cookie =~ s/^(.*?);.*$/$1/s;
+
+            ok( $cookie, "Got the cookie: $cookie" );
+            @headers = ( Cookie => $cookie );
+
+            ( $newid = $cookie ) =~ s/.+=//;
+
+            isnt( $oldid, $newid,
+                "after change_session_id session cookie value changed" );
+        }
 
         is(
            $cb->( GET '/destroy', @headers)->decoded_content,
