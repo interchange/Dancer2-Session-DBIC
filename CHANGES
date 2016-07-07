@@ -1,5 +1,14 @@
 Revision history for Dancer2::Session::DBI
 
+0.110 Thu Jul  7 18:37:35 2016 CEST
+
+    [ENHANCEMENTS]
+
+    * Add _change_id method to support Dancer2's new change_session_id
+      method (Peter Mottram).
+    * Add tests for new change_session_id method in Dancer2::Core::App
+      (Peter Mottram).
+
 0.102 Sun Mar 27 08:49:17 2016 CEST
 
     [BUG FIXES]
