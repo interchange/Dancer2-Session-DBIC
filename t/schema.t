@@ -73,12 +73,15 @@ sub test_session_schema {
     my $pk_expected = $schema_options->{id_column} || 'sessions_id';
 
     cmp_ok( $pk, 'eq', $pk_expected,
-        "Test name of column for session ID for $schema_class" );
+        "name of column for session ID for $schema_class is $pk_expected" );
 
     my $rs = $dbic_session->resultset;
     my $rs_expected = $schema_options->{resultset} || 'Session';
 
     cmp_ok($rs, 'eq', $rs_expected, "Test name of resultset for $schema_class");
+
+    cmp_ok $schema->resultset($rs_expected)->count, '==', 0,
+      "We start with no session records in the database";
 
     {
         package Foo;
@@ -175,6 +178,13 @@ sub test_session_schema {
             'Retrieve pristine foo key',
         );
 
+        cmp_ok $schema->resultset($rs_expected)->count, '==', 1,
+          "One session in the database";
+
+        ok $schema->resultset($rs_expected)
+          ->find( { $pk_expected => $session_id } ),
+          "Database record found with correct session id";
+
         is(
             $cb->( GET '/putfoo', @headers )->decoded_content,
             'bar',
@@ -215,9 +225,11 @@ sub test_session_schema {
 
         $res = $cb->( GET '/change_session_id', @headers );
         $newid = $res->decoded_content;
-        SKIP: {
-            skip "This Dancer2 version does not support change_session_id", 3
+      SKIP: {
+            skip "This Dancer2 version does not support change_session_id", 5
               unless $newid ne 'unsupported';
+
+            note "testing change_session_id";
 
             isnt( $oldid, $newid,
                 "after change_session_id we have new ID in response" );
@@ -232,6 +244,13 @@ sub test_session_schema {
 
             isnt( $oldid, $newid,
                 "after change_session_id session cookie value changed" );
+
+            cmp_ok $schema->resultset($rs_expected)->count, '==', 1,
+              "One session in the database";
+
+            ok $schema->resultset($rs_expected)
+              ->find( { $pk_expected => $newid } ),
+              "Database record found with correct session id";
         }
 
         is(
