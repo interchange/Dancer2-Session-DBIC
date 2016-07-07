@@ -318,6 +318,18 @@ sub _retrieve {
     return $session;
 }
 
+=head2 _change_id( $old_id, $new_id )
+
+Change ID of session with C<$old_id> to <$new_id>.
+
+=cut
+
+sub _change_id {
+    my ( $self, $old_id, $new_id ) = @_;
+
+    $self->_rset->search( { $self->id_column => $old_id } )
+      ->update( { $self->id_column => $new_id } );
+}
 
 =head2 _destroy()
 
