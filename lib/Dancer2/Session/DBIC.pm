@@ -388,9 +388,6 @@ sub _dbic {
     }
     else {
         my $schema_class = $self->schema_class;
-
-	my $settings = {};
- 
         $handle->{schema} = $self->_load_schema_class($schema_class,
                                                       $self->dsn,
                                                       $self->user,
@@ -408,7 +405,7 @@ sub _dbic {
 
 # Returns specific resultset
 sub _rset {
-    my ($self, $name) = @_;
+    my ($self) = @_;
 
     my $handle = $self->_dbic;
 
