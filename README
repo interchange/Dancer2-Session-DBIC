@@ -122,12 +122,12 @@ ATTRIBUTES
 
  serialize_options
 
-    Options to be passed to the constructor of the the serializer class as
+    Options to be passed to the constructor of the serializer class as
     a hash reference.
 
  deserialize_options
 
-    Options to be passed to the constructor of the the deserializer class
+    Options to be passed to the constructor of the deserializer class
     as a hash reference.
 
 METHODS
