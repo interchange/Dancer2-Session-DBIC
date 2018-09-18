@@ -234,7 +234,7 @@ sub _build_serializer_object {
 
 =head2 serialize_options
 
-Options to be passed to the constructor of the the C<serializer> class
+Options to be passed to the constructor of the C<serializer> class
 as a hash reference.
 
 =cut
@@ -247,7 +247,7 @@ has serialize_options => (
 
 =head2 deserialize_options
 
-Options to be passed to the constructor of the the C<deserializer> class
+Options to be passed to the constructor of the C<deserializer> class
 as a hash reference.
 
 =cut
