@@ -13,7 +13,7 @@ use Moo;
 with 'Dancer2::Core::Role::SessionFactory';
 use namespace::clean;
 
-our $VERSION = '0.110';
+our $VERSION = '0.120';
 
 =head1 NAME
 
@@ -21,7 +21,7 @@ Dancer2::Session::DBIC - DBIx::Class session engine for Dancer2
 
 =head1 VERSION
 
-0.110
+0.120
 
 =head1 DESCRIPTION
 
